@@ -230,7 +230,7 @@ sumar = function(x,y,z,j=3){
 sumar(2,3,10)   # dejando el argumento j fijado por el valor default
 sumar(2,3,10,1) # dandole un valor al argumento j 
 
-# 7. Opcional: Estructuras de control y ciclos en R ----
+# 7. Estructuras de control y ciclos en R ----
 
 # Ciclo while (Ciclo más general)
 
