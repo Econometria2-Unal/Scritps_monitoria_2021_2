@@ -12,7 +12,7 @@ remove(list = ls()) # Codigo para limpiar el Environment
 # Otras características de R:
 # Lenguaje que permite trabajar con objetos (obviamente, no tan avanzado como Python pero igual permite la manipulación de objetos)
 # Lenguaje con fuertes capacidades de programación funcional 
-# (que en su gran mayoría es el paradigma que domina a la hora de hacer análisi estadístico)
+# (que en su gran mayoría es el paradigma que domina a la hora de hacer análisis estadístico)
 
 # ¿Por qué R es tan demandado/popular hoy en día?
 # Es un lenguaje moderno de finales de los 80s y comienzos de los 90s (a diferencia de stata)
@@ -248,6 +248,13 @@ for (j in 1:10){
   print(j)
 }
 
+suma = 0
+valores = 1:100
+for (numero in valores){
+  # print(numero)
+  suma = numero + suma
+}
+
 # esctructura de flujo: if-else (condicionales)
 
 n1 = 5
@@ -267,7 +274,9 @@ library(tidyverse) # Libreria más importante en todo R (criterio personal del m
 library(readxl) # Libreria pra leer achivos excel
 library(haven) # Libreria para leer archivos .dta de stata
 
-# 8.1 Paqtue dplyr ----
+# 8.1 Paquete dplyr ----
+
+# dplyr es el paquete para manipular bases de datos en R
 
 # mtcars: base de datos sobre características de carros antiguos
 
@@ -287,6 +296,8 @@ glimpse(mtcars) # visualizar una base de datos (Recordar que toda base de datos 
 # Creación de variables a partir de variables antiguas
 manip1 = mtcars %>%  
   mutate(mult = mpg * cyl, sqr_mpg = mpg^2) # Nota: ctrl + shift + m para generar el simbolo: %>% (Intentelo!)
+
+# manip1 = mutate(mtcars, mult = mpg * cyl, sqr_mpg = mpg^2)
 
 # Filtrar bases de datos a partir de los valores de una variable 
 manip2 = mtcars %>% 
