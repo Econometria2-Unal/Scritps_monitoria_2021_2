@@ -48,6 +48,7 @@ autoplot(yt_rb, xlab="",ylab="", main=" Simulación de una serie y_t que sigue u
 
 #Vamos a hacer la ACF y PACF del PGD ARIMA(0,0,0) (Ruido Blanco)
 lags=20
+x11()
 par(mfrow=c(1,2))
 acf(yt_rb,lag.max=lags,plot=T,lwd=2,xlab='',main='ACF del PGD ARIMA(0,0,0) (Ruido Blanco)') 
 pacf(yt_rb,lag.max=lags,plot=T,lwd=2,xlab='',main='PACF del PGD ARIMA(0,0,0) (Ruido Blanco)')
@@ -63,6 +64,7 @@ x11()
 autoplot(yt1s, xlab="",ylab="", main=" Simulación de una serie y_t que sigue un PGD ARIMA (1,0,0)",lty=1, lwd=0.4, col="red")
 
 #Vamos a hacer la ACF y PACF del PGD ARIMA(1,0,0)
+x11()
 lags=20
 par(mfrow=c(1,2))
 acf(yt1s,lag.max=lags,plot=T,lwd=2,xlab='',main='ACF del PGD ARIMA(1,0,0)') 
@@ -82,12 +84,25 @@ autoplot(yt1n, xlab="",ylab="", main=" Simulación de una serie y_t que sigue un
 
 #Vamos a hacer la ACF y PACF del PGD ARIMA(1,1,0) en donde evidenciamos un proceso altamente persistente, pues
 #incluso con 20 rezagos la correlación persiste: el proceso no es débilmente dependiente y por ende tampoco es estacionario.
+x11()
 lags=20
 par(mfrow=c(1,2))
 acf(yt1n,lag.max=lags,plot=T,lwd=2,xlab='',main='ACF del PGD ARIMA(1,1,0)') 
 pacf(yt1n,lag.max=lags,plot=T,lwd=2,xlab='',main='PACF del PGD ARIMA(1,1,0)')
 
-#---
+#Vamos a diferenciar la serie 
+
+diffyt1n <- diff(yt1n)
+autoplot(diffyt1n, main = "Diferenciación de una serie I(1)", col="red")
+
+#Vemos como cambian la ACF y PACF de la serie diferenciada
+
+x11()
+lags=20
+par(mfrow=c(1,2))
+acf(diffyt1n,lag.max=lags,plot=T,lwd=2,xlab='',main='ACF del PGD ARIMA(1,1,0)') 
+pacf(diffyt1n,lag.max=lags,plot=T,lwd=2,xlab='',main='PACF del PGD ARIMA(1,1,0)')
+
 
 #---- Simulación de un proceso AR(2) estacionario ----
 
@@ -99,6 +114,7 @@ x11()
 autoplot(yt2s, xlab="",ylab="", main=" Simulación de una serie y_t que sigue un PGD ARIMA (2,0,0)",lty=1, lwd=0.4, col="red")
 
 #Vamos a hacer la ACF y PACF del PGD ARIMA(2,0,0)
+x11()
 lags=20
 par(mfrow=c(1,2))
 acf(yt2s,lag.max=lags,plot=T,lwd=2,xlab='',main='ACF del PGD ARIMA(2,0,0)') 
@@ -116,10 +132,24 @@ autoplot(yt2n, xlab="",ylab="", main=" Simulación de una serie y_t que sigue un
 
 #Vamos a hacer la ACF y PACF del PGD ARIMA(1,1,0) en donde evidenciamos un proceso altamente persistente, pues
 #incluso con 20 rezagos la correlación persiste: el proceso no es débilmente dependiente.
+x11()
 lags=20
 par(mfrow=c(1,2))
 acf(yt2n,lag.max=lags,plot=T,lwd=2,xlab='',main='ACF del PGD ARIMA(2,1,0)') 
 pacf(yt2n,lag.max=lags,plot=T,lwd=2,xlab='',main='PACF del PGD ARIMA(2,1,0)')
+        
+#Vamo s a diferenciar la serie 
+
+diffyt2n <- diff(yt2n)
+autoplot(diffyt2n, main = "Diferenciación de una serie I(1)", col="red")
+
+#Vemos como cambian la ACF y PACF de la serie diferenciada
+        
+x11()
+lags=20
+par(mfrow=c(1,2))
+acf(diffyt2n,lag.max=lags,plot=T,lwd=2,xlab='',main='ACF del PGD ARIMA(1,1,0)') 
+pacf(diffyt2n,lag.max=lags,plot=T,lwd=2,xlab='',main='PACF del PGD ARIMA(1,1,0)')
 
 
 #---
@@ -135,6 +165,7 @@ autoplot(yt3s, xlab="",ylab="", main=" Simulación de una serie y_t que sigue un
 
 #Vamos a hacer la ACF y PACF del PGD ARIMA(0,0,1)
 lags=20
+x11()
 par(mfrow=c(1,2))
 acf(yt3s,lag.max=lags,plot=T,lwd=2,xlab='',main='ACF del PGD ARIMA(0,0,1)') 
 pacf(yt3s,lag.max=lags,plot=T,lwd=2,xlab='',main='PACF del PGD ARIMA(0,0,1)')
@@ -152,11 +183,10 @@ autoplot(yt3n, xlab="",ylab="", main=" Simulación de una serie y_t que sigue un
 #Vamos a hacer la ACF y PACF del PGD ARIMA(0,1,1) en donde evidenciamos un proceso altamente persistente, pues
 #incluso con 20 rezagos la correlación persiste: el proceso no es débilmente dependiente.
 lags=20
+x11()
 par(mfrow=c(1,2))
 acf(yt3n,lag.max=lags,plot=T,lwd=2,xlab='',main='ACF del PGD ARIMA(0,1,1)') 
 pacf(yt3n,lag.max=lags,plot=T,lwd=2,xlab='',main='PACF del PGD ARIMA(0,1,1)')
-
-
 
 #--- 
 
@@ -171,6 +201,7 @@ autoplot(yt4s, xlab="",ylab="", main=" Simulación de una serie y_t que sigue un
 
 #Vamos a hacer la ACF y PACF del PGD ARIMA(0,0,2)
 lags=20
+x11()
 par(mfrow=c(1,2))
 acf(yt4s,lag.max=lags,plot=T,lwd=2,xlab='',main='ACF del PGD ARIMA(0,0,2)') 
 pacf(yt4s,lag.max=lags,plot=T,lwd=2,xlab='',main='PACF del PGD ARIMA(0,0,2)')
@@ -206,6 +237,7 @@ autoplot(yt5s, xlab="",ylab="", main=" Simulación de una serie y_t que sigue un
 
 #Vamos a hacer la ACF y PACF del PGD ARIMA(1,0,1)
 lags=20
+x11()
 par(mfrow=c(1,2))
 acf(yt5s,lag.max=lags,plot=T,lwd=2,xlab='',main='ACF del PGD ARIMA(1,0,1)') 
 pacf(yt5s,lag.max=lags,plot=T,lwd=2,xlab='',main='PACF del PGD ARIMA(1,0,1)')
@@ -223,6 +255,7 @@ autoplot(yt5n, xlab="",ylab="", main=" Simulación de una serie y_t que sigue un
 #Vamos a hacer la ACF y PACF del PGD ARIMA(1,1,1) en donde evidenciamos un proceso altamente persistente, pues
 #incluso con 20 rezagos la correlación persiste: el proceso no es débilmente dependiente.
 lags=20
+x11()
 par(mfrow=c(1,2))
 acf(yt5n,lag.max=lags,plot=T,lwd=2,xlab='',main='ACF del PGD ARIMA(1,1,1)') 
 pacf(yt5n,lag.max=lags,plot=T,lwd=2,xlab='',main='PACF del PGD ARIMA(1,1,1)')
