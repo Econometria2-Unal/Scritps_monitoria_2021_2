@@ -38,7 +38,7 @@ simulacion_DF = function(n, N, tipo_prueba, trend = 1:n, drift = 0.1){
   # (Recuerden que el estadístico de DF surge como el estadístico-t de una regresión, cuya forma funcional depende de los terminos determíniscos que tenga la prueba DF)
   # sim_df va a ser un data frame que irá almacenando los valores del parámtero de interés(el que acompaña y_(t-1) en la regresión que se usa para obtener el estadístico DF)
   # y almacena también el estadístico t (es decir el valor que se obtiene del estadístico de DF para la serie simulada)
-  # de DF que se obtiene enc ada iteración del código
+  # de DF que se obtiene en cada iteración del código
   
   # Nota: Recuerden que si la serie no es estacionaria, el valor del parámetro de interés debería ser cero (hipótesis nula para una prueba DF)
   # El data frame que se creeara tendrá dimensiones de 10000 x 2
@@ -93,7 +93,6 @@ histogram_rho = function(df, titulo, x_lab, color_llenado, num_bins = 30){
 }
 
 # Histograma para el estadístico de DF
-
 histogram_DF = function(df, titulo, x_lab, color_llenado, num_bins = 30){
   x11()
   histog = df %>%
@@ -172,7 +171,7 @@ names(critical_df)[1] = "10%"; names(critical_df)[2] = "5%"; names(critical_df)[
 # Data frame con todos los valores críticos para las diferentes especificaciones prueba de DF simulada
 critical_df
 
-# Contrucción de un data frame con todas las series simuladas (incluida la siulación de una normal estándar) para usar en la 
+# Contrucción de un data frame con todas las series simuladas (incluida la simulación de una normal estándar) para usar en la 
 # realización de las gráficas de las densidades tanto de las diferentes distribuciones de cada uno de las especificaciones del estadístico t de DF
 # como de la distribución normal 
 df_todos = data.frame(DF_none = df_none$DF_statistic, DF_drift = df_drift$DF_statistic, 

@@ -36,7 +36,8 @@ library(readxl)     # Para leer archivos excel
 # Nota2: En la prática, generalmente, no se usa solo el test de DF sino sus resultados se corroboran con pruebas de raiz unitaria complementarias
 #        Un ejemplo, es el uso de la prueba de kpss: cuya hipótesis nula es que la serie es estacionaria (fijense que esto es contrario a la prueba de DF donde la hipótesis nula es no estacionaridad)
 # Nota3: Es importante que la serie a estudiar no presente cambio estructural. 
-#        De presentar la serie cambio estructural deja de ser válida la prueba de DF 
+#        De presentar la serie cambio estructural deja de ser válida la prueba de DF
+#        (Y hay que implementar una prueba de raíz unitaria con cambio estructural como lo es el test de Zivot & Andrews. En urca el test de Zivot & Andrews es: ur.za) 
 # Nota4: Los valores críticos que ofrece la función ur.df están basados en una muestra de 100 datos. 
 #        Si se quiere ser más preciso y usar los valores críticos para el número de datos que tenga la serie a trabajar,
 #        se pueden usar los valores críticos que se encuentran en la Tabla A del apendice de tablas estadística del manual suplementario del libro de Enders.
@@ -89,7 +90,7 @@ summary(adf.none)
 # Nota: Se usa la prueba KPSS para corroborar la conclusión anterior 
 summary(ur.kpss(lc)) # Rechazo la hipótesis nula de estacionaridad, lo que indica que la serie no es estacionaria
 
-# 4. Diferencio la serie y analizo si la seriees estacionaria 
+# 4. Diferencio la serie y analizo si la serie es estacionaria 
 
 # Gráfico de la serie diferenciada
 diff.lc = diff(lc)
