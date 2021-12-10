@@ -1,6 +1,6 @@
 ##____________________________________________________________________________________
 #       UNIVERSIDAD NACIONAL DE COLOMBIA - FACULTAD DE CIENCIAS ECONÓMICAS
-#                         ECONOMETRIA II - 2021-I
+#                         ECONOMETRIA II - 2022-I
 #            SESIÓN MONITORIA : Modelos de Vectores Autorregresivos
 ##____________________________________________________________________________________
 ##____________________________________________________________________________________
@@ -113,7 +113,7 @@ Acoef(V.no) #Los valores teóricos eran: a11=0.3; a12=0.2; a21=0.5; a22=0.6. Las
 
 #Matriz de varianzas y covarianzas de los residuales
 Sigma.est = summary(V.no)$covres #Esta es la matriz (Sigma). Si se hace una descomposición de Choleski recordar que: Sigma = P %*% t(P), donde P es una matriz triangular inferior
-Sigma.est #Individualmente cada residual debe ser un ruido blanco. Sin embargo, hay correlación contemporánea entre ellos. (Son residuales que corresponden a la estiación de un VAR en forma reducida)
+Sigma.est #Individualmente cada residual debe ser un ruido blanco. Sin embargo, hay correlación contemporánea entre ellos. (Son residuales que corresponden a la estimación de un VAR en forma reducida)
 
 #---- Tercera etapa: Validación de supuestos serie simulada  ----
 
