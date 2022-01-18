@@ -1,0 +1,635 @@
+---
+title: "Monitoria econometria 2"
+author: "Camilo Forero - Jhan Andrade - Germán Rodriguez"
+date: "16/9/2020"
+output: pdf_document
+---
+
+\tableofcontents
+
+> Para las personas que quieran reproducir el documento markdown (extención .md), con el que se genero este PDF, deben tener las bases de datos en el mismo directorio de trabajo donde se encuentre el archivo markdown. 
+
+# 1. Importación y tipo de datos 
+
+R studio permite cargar diversos formatos de bases de datos en los cuales se destacan: 
+
+- **Archivos CSV:**  Archivos delimitados por comas o punto y coma 
+- **Archivos txt:** Archivos delimitados por tabulaciones 
+- **Archivos dta:** Bases de datos de STATA 
+- **Archivos XLS y XLSX**:  Archivos de excel 
+
+Para importar bases de datos en RStudio es importante en primer lugar configurar el directorio de trabajo 
+
+## 1.1 Configuración del directorio de trabajo 
+
+- **Obtener el directorio de trabajo:** 
+```{r setup, echo=TRUE, cache=TRUE}
+WD<-getwd()
+WD
+```
+
+- **Establecer el directorio de trabajo:** 
+
+Dentro de las comillas de debe poner la ruta de la carpeta en donde se encuentran guardadas las bases de datos:
+
+Un ejemplo de la estructura del código para usar el comando setwd en RSstudio sería: 
+
+setwd("C:/Users/FORERO/Documents/Bases de datos")
+
+```{r, cache=TRUE}
+setwd(WD)
+```
+
+Especificando otro directorio de trabajo manualmente:
+
+```{r, cache=TRUE}
+setwd("~/Documents/GitHub/semestre5/econometria_2_personal/monitorias/2020_2/monitoria2_estadistica_en_R_validacion_supuestos/2_datos")
+```
+
+Una vez se configure el directorio de trabajo, se podrán llamar los archivos por el nombre y formato en el que esta guardado. Es importante indicarle a RStudio en que tipo de formato se encuentra la base de datos, por ejemplo: 
+
+* **"Nombre_Base.xls"** para archivos excel
+* **"Nombre_Base.xlsx"** para archivos excel 
+* **"Nombre_Base.csv"** para archivos excel
+* **"Nombre_Base.dta"** para archivos excel
+
+Hay que usar diferentes funciones dependiendo del formato en el que se encuentre la base de datos que se va a importar. A continuación, se encuentra las diferentes funciones para importar bases de datos. 
+
+## 1.2 Importar datos en formato csv
+
+```{r, cache=TRUE}
+titanic=read.csv("titanic.csv", sep = ",")
+```
+
+Para ver la base de datos usamos el código *View(titanic)*.  
+
+Para trabajar con el nombre de los datos de las variables sin necesidad de usar el operador atómico **$**
+
+```{r}
+attach(titanic)
+```
+
+Para visualizar un resumen de la base de datos importada: 
+
+```{r, cache = TRUE}
+summary(titanic)
+```
+
+## 1.3 Importar datos de excel 
+
+Para importar datos en formato "xls" o "xlxs" es importante descargar el paquete *readxl*
+
+```{r, message=F, cache=TRUE}
+#install.packages("readxl")
+library(readxl)
+```
+
+Vamos a cargar la base de datos llamada *Datos1 - Script 2* en formato "xlsx" 
+
+```{r, cache=TRUE}
+Excel<-read_excel("Datos1 - Script 2.xlsx")
+```
+
+Los siguientes códigos nos permiten: 
+
+- *Excel*: visualizar la base de datos en la consola
+- *attach(Excel)*: trabajar con el nombre de las variables sin necesidad de trabajar con el operador atómico *$*
+- *View(Excel)*: Visualizar la base de datos en RStudio en una nueva ventana como si fuera una tabla de excel
+
+## 1.4 Importar datos provenientes de STATA 
+
+Para que RStudio pueda cargar bases de datos en STATA (ya sea que se encuentra guardadas localmente como documentos o cargadas en Internet),es importante instalar el paquete foreign 
+
+```{r, cache=TRUE}
+#install.packages("foreign") 
+library(foreign)
+```
+
+El comando para cargar este tipo de bases es: 
+
+```{r, cache=TRUE}
+Datos<-read.dta("http://qcpages.qc.cuny.edu/~rvesselinov/statadata/phillips.dta")
+```
+
+## 1.5 Importar datos usando las bibliotecas de tidyverse 
+
+La biblioteca tidyverse es un conjunto de paquetes de R que permiten: Importar, modificar y analizar bases de datos. Contiene el objeto: *tibble* que cumple el mismo papel que un dataframe pero con más funcionalidades. Además, contiene funcionalidades de gráficación.
+
+**Paquetes principales:**
+
+- dplyr: Para modificar variables dentro de las bases de datos. Esto implica filtrar, modificar variables, agrupar variables y demás dentro una base de datos. 
+- tidyr: Para modificar la estructura de la base de datos
+- ggplot2: Biblioteca de graficación (Posiblemente la principal biblioteca de graficación de R)
+- readr: Para importar y trabajar con archivos excel
+
+y mucho otros paquetes. Los interesados en conocer más sobre el conjunto de paquetes del tidyverse pueden revisar el siguiente link: [Link al tidyverse](https://www.tidyverse.org/)
+ 
+```{r, cache=TRUE}
+#install.packages("tidyverse")
+library(tidyverse)
+```
+ 
+### Importar un archivo csv usando tidyverse 
+
+read_csv importa la base de datos en formato csv como un objeto tibble.
+
+```{r, cache=TRUE}
+titanic2 = read_csv("titanic.csv") 
+```
+
+glimpse\footnote{este comando hace parte del paquete dplyr} es un comando que permite visualizar la base de datos de manera compacta en la consola\footnote{Donde entre otras cosas muestre el tipo o clase de la variable que se está importando}
+
+```{r, cache=TRUE, eval=FALSE}
+glimpse(titanic2) 
+```
+
+# 2. Manipulación de base de datos 
+ 
+RStudio es una de las alternativas mas sencillas para realizar minería de datos, comúnmente lo que uno suele hacer con los datos es ordenarlos, transformarlos, reducir el número de observaciones, etc. Bastante utilizado hoy en día en temas de Big Data y Machine Learning.
+
+## 2.1 Remplazar valores de una variable con if else 
+
+```{r, cache=TRUE}
+summary(titanic$Sex)
+```
+
+Se busca remplazar las variables categóricas del género, de tal manera que se cree una variable dummy que tome el valor de 1 cuando es mujer y 0 en otro caso: 
+
+```{r, cache=TRUE}
+titanic$Sex<-ifelse(titanic$Sex=="female",1,0) #ifelse(test lógico, yes/verdadero, no/falso)
+summary(titanic$Sex)
+```
+
+Otro ejemplo, es crear una variable de conteo que indique la clase en la que viajaba el tripulante del Titanic: 
+
+```{r, cache=TRUE}
+titanic$PClass<-ifelse(titanic$PClass=="1st",1,
+                       ifelse(titanic$PClass=="2nd",2,3))
+```
+
+```{r, cache=TRUE}
+table(titanic$PClass)
+```
+
+## 2.2 Medidas de tendencia central y variabilidad 
+
+```{r, cache=TRUE}
+mean(Age, na.rm= T)         #Media
+median(Age,na.rm = T)       #Mediana
+sd(Age,na.rm = T)           #Desviación estandar
+var(Age,na.rm = T)          #Varianza
+```
+
+*El argumento __na.rm__ es para que las casillas en las que no hay información no se tengan en cuenta*
+
+## 2.3 Gráficos 
+
+### 2.3.1 Gráficos usando las funciones de R 
+
+#### Tablas 
+
+La estructura del código es table(Nombre_variable)
+
+```{r, cache=TRUE}
+table(Sex)
+table(PClass)
+```
+
+#### Gráfica de barras 
+
+Para crear un diagrama de barras es importante primero crear una Tabla de frecuencia de la variable que se desee graficar 
+
+```{r, fig.height = 3.5, cache=TRUE}
+#x11() #x11() permite que las gráficas se desplieguen en ventanas emergentes.
+barplot(table(Sex), main ="Frecuencia de género", xlab="Género",
+        ylab ="Número", col="brown") # main es para el título, xlab y ylab son para 
+                                     # los nombres de las ejes  y col es para el color de las barras
+```
+> Para las personas que prefieran visualizar las gráficas en una pestaña externa pueden usar el comando x11() que permite que las gráficas se desplieguen en ventanas emergentes.
+
+### Histogramas 
+
+La estructura del código es hist(Nombre_variable, main="...", xlab="...",ylab="...", col="...")
+
+- main: Para el título de la gráfica
+- xlab: Para el título del eje x
+- ylab: Para el título del eje y
+- col: Color de las barras
+
+```{r, fig.height = 3.5, cache=TRUE}
+hist(Age, main = "Edad de los tripulantes", xlab="Edad",
+     ylab = "Frecuencia", col = "blue3")
+```
+
+### Diagrama de Caja - boxplot
+
+La estructura del código es boxplot(Nombre_variable, horizontal=T, main="...", abline(v=mean(Age,na.rm = T), col="...")
+
+- El argumento *horizontal* permite que el diagrama de caja sea horizontal 
+- El argumento *abline* agregara una linea vértical al grafico, en este caso indicara la media de la variable
+
+```{r, fig.height = 3.5, cache=TRUE}
+boxplot(Age, col=c(3), horizontal = TRUE, main="Edad tripulantes Titanic")
+abline(v=mean(Age,na.rm = T),col=c(2))
+summary(Age)
+```
+
+## Gráfico tipo pie 
+
+De la misma manera que el gráfico de barras, hay que primero crear una tabla de frecuencia acumulada para que R Studio pueda crear el grafico de torta
+
+La estructura del código es pie(table(**VARIABLE**),radius=0.8, main = "...", col = c()),legend("topleft", legend=c("Desaparecido","Sobreviviente"), pch = 10,col =c("brown1","dodgerblue"))
+
+- *radius* indica el tamaño de la gráfica 
+- *legend* permite agregar un cuadro de leyenda al gráfico (Para mas información pueden leer la documentación de legend)
+- *pch* indica la figura de la convención de la leyenda + Hay que tener en cuenta que 
+
+
+```{r,fig.height = 3, cache=TRUE}
+
+pie(table(Survived),radius=0.8, main = "Gráfico tipo pastel", col = c("brown1","blue2"))
+legend("topleft", legend= c("Desaparecido","Sobreviviente"), pch = 10,col =
+         c("brown1","dodgerblue"),)
+```
+
+## 2.2 Gráficos usando la biblioteca ggplot2 
+
+La librería ggplot2 permite crear gráficos mucho mas estéticos. Este paquete provee una estructura base de tal manera que se le indica que tipo de variable se va a graficar y como se va a presentar. La función base para hacer cualquier tipo de gráfico es: 
+
+```{r, cache=TRUE, warning=FALSE}
+hist1 = ggplot(data = titanic, aes(Age)) +
+        geom_histogram(fill = "yellow3") + 
+        labs(title = "Edad de los tripulantes") +
+        xlab("Edad") + 
+        ylab("Frecuencia") + 
+        theme_classic()
+hist1
+```
+
+ggplot opera a través de layers o capas\footnote{cada capa se conecta mediante un **+**}: 
+1. La capa principal es la que se conoce como ggplot(*base_datos*, aes(x = var_x, y = var_y)). En ella se especifica primero la *base_datos* con la que se va a trabajar y luego dentro de **aes()** las variables x(independiente) y y(dependiente) para la gráfica. 
+2. Luego, la capa geom_**gráfica** indica el tipo de gráfica. En el caso del ejemplo anterior se desea hacer un histograma por lo que usa **geom_histogram**
+3. A continuación, se especifica la capa de labs en donde se coloca el título de la gráfica.
+4. Las siguientes dos capas especifican los nombres para el eje x y para el eje y
+5. Finalmente, la capa theme_classic() espeficica
+
+Como pueden observar, toda gráfica de ggplot opera mediante un estructura de capas. 
+
+# 3. Regresión lineal 
+
+Para los ejercicios de regresión de esta sección se cargaran los siguientes paquetes\footnote{El paquete wooldridge contiene la mayoría de las bases de datos que se encuentran en la 6 edición del libro Wooldridge}: 
+
+```{r, cache=TRUE}
+#install.packages("wooldridge")
+library(wooldridge)
+```
+
+En muchas ocasiones los paquetes tienen bases de datos, las cuales podemos cargar a RStudio. Vamos a importar la base de datos llamada bwght del paquete Wooldridge
+
+```{r, cache=TRUE}
+data("bwght2") # Para importar bases de datos que se encuentran dentro de un paquete previamente instalado
+
+attach(bwght2)
+
+help("bwght2") # Descripción de la base de datos
+```
+
+La base de datos *bwght* es una base de datos con 1832 observaciones de 23 variables: 
+
+```{r, cache=TRUE}
+glimpse(bwght2)
+```
+
+
++ mage: mother's age, years
++ meduc: mother's educ, years
++ monpre: month prenatal care began
++ npvis: total number of prenatal visits
++ fage: father's age, years
++ feduc: father's educ, years
++ bwght: birth weight, grams
++ omaps: one minute apgar score
++ fmaps: five minute apgar score
++ cigs: avg cigarettes per day
++ drink: avg drinks per week
++ lbw: =1 if bwght <= 2000
++ vlbw: =1 if bwght <= 1500
++ male: =1 if baby male
++ mwhte: =1 if mother white
++ mblck: =1 if mother black
++ moth: =1 if mother is other
++ fwhte: =1 if father white
++ fblck: =1 if father black
++ foth: =1 if father is other
++ lbwght: log(bwght)
++ magesq: mage^2
++ npvissq: npvis^2
+
+Las características o estadística descriptiva de las variables
+
+```{r, cache=TRUE}
+summary(bwght2) # Información más extensa de la base de datos 
+#install.packages("tibble")
+library(tibble)
+#glimpse(bwght2) # Manera compacta de visualizar la base de datos
+```
+
+## 3.1 Estimación
+
+Para hacer una regresión lineal en RStudio el comando es *lm* de tal manera que la sintaxis del comando es *lm(Y ~ X , data="Nombre_Base_Datos")* donde *Y* es la variable dependiente y *X* son todas las variables explicativas(regresoras).
+
+Con el *summary(Nombre de la regresión)* se pueden observar los resultados de las regresiones
+
+En el siguiente ejemplo se realizaran 3 regresiones en donde en cada regresión lo que variará serán las variables regresoras. 
+
+```{r, cache=TRUE}
+MODELO1 = lm(bwght ~ cigs + drink + npvis + male + mage + 
+               mwhte + mblck, data = bwght2)
+summary(MODELO1)
+
+MODELO2 = lm(bwght ~ cigs + drink + npvis + male + mage +
+               magesq +mwhte + mblck + meduc + feduc , data = bwght2)
+summary(MODELO2)
+
+mean.educ = (meduc + feduc)/2
+MODELO3 = lm(bwght ~ cigs + drink + npvis + male + mage + 
+               magesq +mwhte + mblck + mean.educ, data = bwght2)
+summary(MODELO3)
+```
+
+Para una regresión lineal simple estimada mediante OLS la salida del summary indicaría lo siguiente: 
+- **Call**: indica básicamente el comando utilizado para generar la salida. 
+- **Residuals**: Para indicar los cuantiles de los residuales
+- **Coefficients:** Para indicar el valor de los coeficientes estimados, el error estándar asociado a cada coeficiente, el t-valor y el p-valor asociado a las pruebas de signicancia. El número de estrellitas indica el nivel de significancia 
+- **Signif. codes**: Indica el significado de cada uno de los códigos para los niveles de significancia. 
+- **Residual standard error**: Indica el valor del error estándar poblacional el $\sigma$. 
+- **Multiple R-squared**: indica el $R^2$ y el $R^2_{adj}$
+- **F-statistic**: indica el estadístico F para la significancia global. En particular el valor del F estadístico, el número de grados de libertad y el p-valor. 
+
+## Supustos de Gauss Markov
+
+1. Linealidad en los paramentros
+$y = \beta_0 + \beta_1 x_1 + \cdots + \beta_k x_k + u$
+2. La muestra proviene de un muestreo aleatorio
+3. No hay multicolinealidad perfecta entre los regresores
+4. Media condcional $E[u|x_1, x_2, \cdots, x_k] = 0$
+5. Homocedasticidad $var(u|x_1, x_2, \cdots, x_k) = \sigma^2$
+
+### Consecuencias de los supuestos de Gauss Markov
+
+*   Si se cumplen los primeros 4 supuestos de Gauss Markov el estimador de **MCO** es insesgado y consistente 
+*   Si se cumplen todos los supuestos de Gauss Markov el estimador de **MCO** es **MELI**
+
+### Presentación de resultados mediante la función stargazer
+
+Ahora bien, existe el comando *stargazer* el cual genera una presentación de los coeficientes estimados de cada regresión de una manera mucho mas estética de como los genera el *summary*
+
+Para ellos es importante cargar instalar los siguientes paquetes 
+
+```{r, cache=TRUE}
+#install.packages("stargazer")
+library(stargazer)
+```
+
+La estructura básica de stargazer es indicarle el nombre de los modelos que se quieren presentar, pues este comando permite presentar mas de una regresión en la misma tabla y los diferentes argumentos adicionales que se quieran incluir en la tabla como lo son el $R^2$, el numero de observaciones entre otros. 
+
+Argumentos de Stargazer: 
+
++ **title:** introducir un título a la tabla
++ **type:** el formato de la tabla (e.g. text o latex)}\footnote{Dependiendo del valor del argumento acá Stargazer generará ya sea una tabla de para imprimir en la consla o una tabla ingresar directamente en latex}
++ **omit:** si se quiere omitir alguna variable de la tabla
++ **style:** específica el estilo de la tabla (p.ej. aer para American Economic Review)
++ **all** all statistics
++ **"adj.rsq"** adjusted R-squared
++ **"aic"** Akaike Information Criterion
++ **"bic"** Bayesian Information Criterion
++ **"chi2"** chi-squared
++ **"f"** F statistic
++ **"ll"** log-likelihood
++ **"logrank"** score (logrank) test
++ **"lr"** likelihood ratio (LR) test
++ **"max.rsq"** maximum R-squared
++ **"n"** number of observations
++ **"null.dev"** null deviance
++ **"Mills"** Inverse Mills Ratio
++ **"res.dev"** residual deviance
++ **"rho"** rho
++ **"rsq"** R-squared
++ **scale** scale
++ **"theta"** theta
++ **"ser"** standard error of the regression (i.e., residual standard error)
++ **"sigma2"** sigma squared
++ **"ubre"** Un-Biased Risk Estimator
++ **"wald"** Wald test
+
+En el siguiente ejemplo stargazer mostrará las 3 regresiones lineales realizadas anteriormente: 
+
+```{r, cache=TRUE, warning=FALSE}
+stargazer(MODELO1, MODELO2, MODELO3, type="text", 
+          column.labels = c("REG1","REG2", "REG3"),
+          keep.stat = c("n", "rsq","adj.rsq","aic"))
+```
+Si se usa el argumento type=latex la tabla resultante será:
+
+```{r, cache=TRUE, warning=FALSE}
+stargazer(MODELO1, MODELO2, MODELO3, type="latex", 
+          column.labels = c("REG1","REG2", "REG3"),
+          keep.stat = c("n", "rsq","adj.rsq","aic"))
+```
+
+Dicho código generado en la consola se puede copiar y pegar directamente en un documento latex para renderizar la tabla de resultados de la regresión el documento latex. 
+
+## 3.2 Otro ejemplo de estimación 
+
+Cargamos la base de datos *Elecciones - Script 2* 
+
+```{r}
+library(readxl)
+Elecciones = read_excel("Elecciones - Script 2.xls")
+attach(Elecciones)
+#View(Elecciones)
+#summary(Elecciones)
+```
+
+Realizamos una regresión nivel-nivel:
+
+```{r, cache=TRUE}
+RegresiónA1 = lm(voteA ~ democA +expendA + expendB + prtystrA) #lin-lin
+summary(RegresiónA1)
+```
+
+Realizamos una regresión nivel-logaritmo:
+
+```{r, cache=TRUE}
+RegresiónA2 = lm(voteA ~ democA +log(expendA)+log(expendB) + log(prtystrA)) #lin-log
+summary(RegresiónA2)
+```
+
+### Presentación de resultados:
+
+```{r, cache=TRUE}
+stargazer(RegresiónA1, RegresiónA2, type="text",
+          column.labels = c("N-N","N-L"),
+          keep.stat = c("n", "rsq", "adj.rsq", "aic"))
+```
+
+## 3.3 Pruebas de significancia individual para las variables 
+
+Para realizar las pruebas de significancia individual es necesario usar el paquete *lmtest*. 
+
+```{r}
+#install.packages("lmtest")
+library("lmtest")
+```
+
+El comando *coeftest*\footnote{del paquete lmtest} nos arroja la significancia estadística de los coeficientes estimados:
+
+```{r, cache=TRUE}
+coeftest(RegresiónA2)
+```
+
+Intervalos de confianza para los coeficientes de la regresión al 90 % y 95 % especificamente:
+
+```{r, cache=TRUE}
+confint(RegresiónA2) #Al 95%
+confint(RegresiónA2, level = 0.90) #Al 90%
+```
+
+Valores ajustados o estimados usando el comando *fitted.values* 
+
+```{r, cache=TRUE}
+Estimados<-fitted.values(RegresiónA2)
+```
+
+Residuales de la regresión  con el comando *residuals*
+
+```{r, cache=TRUE}
+Residuales<-residuals(RegresiónA2)
+RS.Residuals <-rstandard(RegresiónA2) # Residuales estandarizados (divididos por su desviación estándar)
+```
+
+# 4. Validación de supuestos 
+
+## 4.1 Test de Ramsey para especificaciones erróneas 
+
+```{r, cache=TRUE}
+resettest(RegresiónA2) #Ho = el modelo está bien especificado
+```
+
+## 4.2 Heteroscedasticidad en los residuales
+
+Es necesario instalar el paquete *car*
+
+```{r,cache=TRUE}
+#install.packages("car")
+library(car)
+```
+
+### Test Breusch-Pagan con Ho=Homocedasticidad
+
+```{r, cache=TRUE}
+bptest(RegresiónA2) #Test Breusch-Pagan con Ho=Homocedasticidad
+```
+
+
+### Test de Varianza no constante con Ho= Homocedasticidad
+
+```{r, cache=TRUE}
+ncvTest(RegresiónA2) #Test de Varianza no constante con Ho= Homocedasticidad
+```
+
+## Correlación serial en los residuales
+
+> Dado que la muestra es de corte transversal no tiene mucho sentido de hablar de correlación serial. No obstante, vale la pena aclarar que si se puede habalr de correlación espacial en muestras de corte trasnversal. La correlación serial va a tomar mucho más importancia cuando se estudien las series de tiempo. 
+
+### Durbin Watson test (Ho:No autocorrelación de 1er orden)
+
+```{r, cache=TRUE}
+dwtest(RegresiónA2) #Durbin Watson test (Ho:No autocorrelación de 1er orden)
+```
+
+### Prueba Breush-Godfrey (Ho:No autocorrelación de orden p)
+
+```{r, cache=TRUE}
+bgtest(RegresiónA2) #Prueba Breush-Godfrey (Ho:No autocorrelación de orden p)
+```
+
+### Gráfico de correlación serial
+
+Una ACF concocida en español como una función de autocorrelación permite investigar si existe autocorrelación o correlación serial en los residuales de una series de tiempo\footnote{Nuevamente, en este caso solo es un ejemplo ilustrativo dado que la correlación serial tiene sentido es en series de tiempo o en datos panel}.
+
+```{r, fig.height = 3.5, cache=TRUE}
+residA2 =rstandard(RegresiónA2)
+acf(residA2, xlab="Residuos", ylab="Autocorrelaciones", main= "CORRELALOGRAMA")
+```
+
+## Errores robustos a la heteroscedasticidad 
+ 
+Para realizar errores robustos en R es muy común usar el paquete *sandwich*.
+
+```{r, cache=TRUE}
+#install.packages("sandwich")
+library("sandwich")
+```
+
+El siguiente código, muestra:
+
+- **vcovHC**: Para calcular la matriz de varianzas y covarianzas con errores robutos a la heterocedasticidad
+- **coeftest**: coeficientes calculados luego de corregir por errores robustos a la heterocedasticidad
+
+```{r, cache=TRUE}
+vcovHC(RegresiónA2) # matriz de varianzas y covarianzas con errores robutos
+coeftest(RegresiónA2, vcov=vcovHC(RegresiónA2)) # coeficientes calculados luego de corregir por errores robustos a la heterocedasticidad
+coeftest(RegresiónA2)
+```
+## Normalidad en los residuales 
+
+Se importa el paquete *tseries*\footnote{El paquete tseries sirve para manejar y manipular series de tiempo en R. Es muy usual emplearlo en series de tiempo} para poder utilizar el comando *jarque.bera.test*. El comando *jarque.bera.test* permite realizar una prueba de **Jarque Bera** la cula es una prueba formal para validar si los residuales presentan normalidad\footnote{Recuerden que si los residuales no presentan normalidad la inferencia estadistica convncional sin ningún tipo de correción no es correcta}. 
+
+### Test formal de Jarque Bera
+
+```{r, cache=TRUE}
+#install.packages("tseries")
+library("tseries")
+
+resreg=residuals(RegresiónA2) # Calculamos los residuos 
+shapiro.test(resreg) # Ho= normalidad
+jarque.bera.test(resreg)#Test Jarque Bera  (#Ho= normalidad)/Más apropiado para series de tiempo
+```
+
+### Histograma de los residuales
+
+Una forma de corroborar si los residuales presentan una distribución normal es a partir de la gráfica del histograma de éstos. Si la forma del histograma parece a la función de densidad de una distribución gaussiana puede ser un fuerte indicativo que los errrores se distribuyen normal\footnote{Recordar que la distribución normal se caractriza por tener colas livianas (i.e. por no tener muchos valores atipicos en sus colas y concentrar la mayor parte de los resultados alrededor de su media.)}
+
+```{r, cache=TRUE}
+hist(resreg, freq=FALSE, main="Distribución de los Residuales", breaks = 20, prob=TRUE)
+curve(dnorm(x, mean=mean(resreg), sd=sd(resreg)),col="darkblue", lwd=2, add=TRUE)
+```
+
+### Grafico QQplot
+
+Una gráfica de cuantiles-cuantiles o gráfica Q-Q es una forma de comparar gráficamente dos distribuciones. Por ello, estas gráficas son muy utilizadas para corroborar un supuestos de distribución de alguna muestra de datos. Por ejemplo, para que la inferencia estadistica usual sea correcta en un modelo de regresión lineal estimado por MCO es necesrio que los residuales se comporten como si provinieran de una distribución normal. 
+
+
+Una gráfica tipo QQ-Plot permite comparar el comportamiento/distribución de los residuales, respecto a una distribución normal teórica. Es decir, se comparan los cuantiles teóricos de una distribución normal con los muestrales que resultarian de la distribución de los residuales. Es muy usual utilizar esta herramienta gráfica para validar el supusto de normalidad en los residuales dado que muchos test de normalidad no son muy robustos para algunas muestras de datos.
+
+Gráficamente, entre más cerca se distribuyan los *puntos*, que representan los cuantiles de la distribución muestral de los datos\footnote{Nuevamente es muy usual utilizar esta prueba en los residuales de una regresión para validar el supuesto de linealidad}, respecto a una línea, que representaría la distribución teórica que se quiere corroborar en los datos\footnote{Nuevamente, una de las distribuciones de comparación más usuales es la normal}, más cercano será la distribución muestral a la distribución teórica que se quiere validar en los datos.  
+
+Una manera rápida de realizar una qqplot es utilizando las funciones qqnorm y qqline que R provee por defecto: 
+
+```{r, cache=TRUE}
+qqnorm(resreg)
+qqline(resreg)
+```
+
+No obstante, una mejor manera de realizar la regresión es mediante el comando *qqPlot* del paquete *car*:
+
+```{r, cache=TRUE}
+#install.packages("car")
+library(car)
+qqPlot(resreg)
+```
+
+Como pueden obsrvar en la gráfica realizada mediante el comando qqPlot la línea azul continua representa los cuantiles de la distribución teórica, en este caso normal, mientras que el conjunto de puntos representa la distribución muesral. Las líneas punteadas azules representan los intervalos de confianza, que se interpretan de la manera usual. Por los resultados de la gráfica, se podría decir que la distribución de los residauales es aproximadamente normal, salvo algunos valores atípicos al final de las colas. 
+
+Para las personas más interesadas en aprender más sobre qq-plots es recomendable leer el siguiente artículo: [QQplots en R!](https://www.tjmahr.com/quantile-quantile-plots-from-scratch/)

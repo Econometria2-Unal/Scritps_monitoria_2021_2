@@ -252,7 +252,7 @@ dl.IPI = diff(log(IPI))
 Infl = diff(log(CPI))
 
 #Graficamos las series:
-
+x11()
 autoplot(dl.IPI, size=2, ts.colour="red", xlab="Año", ylab="Porcentaje", main="Tasa de crecimeinto IPI")
 autoplot(Infl, size=2, ts.colour="green", xlab="Año", ylab="Porcentaje", main="Tasa de inflación")
 autoplot(UNEM, size=2, ts.colour="blue", xlab="Año", ylab="Porcentaje", main="Tasa de desempleo")
