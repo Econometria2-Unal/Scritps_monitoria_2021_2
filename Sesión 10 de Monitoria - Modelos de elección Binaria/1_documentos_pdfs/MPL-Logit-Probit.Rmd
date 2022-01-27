@@ -1,0 +1,475 @@
+---
+title: "Modelos de Elección Discreta"
+author: "Camilo Forero - Jhan Andrade - Germán Rodriguez"
+date: "14/10/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introducción
+
+Los modelos de elección discreta se caracterizan por que su variable explicativa representan decisiones que toman los agentes. Ahora bien, hay múltiples modelos de elección discreta. Pero para efectos del cursos de Econometria II procederemos a abordar los modelos de elección binaria, es decir 2 opciones únicamente. 
+
+Lo anterior se refleja en el hecho de que nuestra variable explicada puede tomar los valores de 0 o 1, por lo tanto se pueden interpretar como modelos que predicen la *probabilidad* de tomar la decisión o no. Una vez dicho esto, hay que tener en cuenta que los modelos de probabilidad lineal (regresión lineal normal) no son los mejores para representar este tipo de decisiones, pues en muchas ocasiones estos modelos suelen pronosticar **probabilidades menores a cero y mayores a uno, lo cual va en contra de la teoría estadística**. Adicionalmente, estos modelos de probabilidad lineal por lo general arrojan un **coeficiente el cual es constante** a lo largo de la muestra. 
+
+Esto último representa un problema en el sentido que, por lo general la probabilidad de ocurrencia de un evento dependerá de características especificas del individuo y los cambios en la probabilidad de ocurrencia no son constantes. Por ejemplo: la probabilidad para una persona de 8, 17 y 22 años de que puedan entrar en un bar o les vendan licor en un almacén ancla no es la misma. Ahora bien, es claro que al niño de 8 años posiblemente no le vendan licor o entre a un bar, en caso de que cumpla 9 años, la probabilidad de ocurrencia de los eventos seguirá siendo nula. Para el caso de la persona con 17 años, puede que al cumplir 18 eventualmente si pueda entrar a bares y por tanto pueda comprar licor legalmente. Por otra parte, el joven de 22, al cumplir un año mas no percibirá un gran cambio en la probabilidad de ocurrencia como si puede ocurrir en el caso del individuo de 17 año, pues con 22 o 23 años ya puede comprar licor legalmente.
+
+Hasta este momento podemos decir que las **limitaciones que tiene el modelo de probabilidad lineal** es que:
+
+ + Predice probabilidades mayores y menores a cero 
+ + Los errores son muy grandes y no siguen una distribución normal
+ + Los coeficientes están sesgados
+
+En realidad la probabilidad de ocurrencia de un evento sigue una forma de *S*, es decir dependiendo de las características generales del evento o del individuo habrá un determinado efecto sobre la probabilidad de ocurrencia del evento. Los modelos que se comportan de esta manera es decir **modelos NO lineales** siguen una distribución *bernoulli*. Para el caso del curso, analizaremos los modelos que hacen uso de funciones de distribución acumulada **logística (Logit)** y **probabilistica o normal (Probit)**.
+
+Hay que tener cuidado si bien Logit y Probit no son modelos lineales, no significa que los parámetros no lo sean. Pues al final, usamos las funciones Logit y Probit para modelar las decisiones, pero estas terminan dependiendo de unos parámetros lineales, es decir :
+
++ Modelo de Probabilidad Lineal: $$Y= \beta_0 +\beta_1X_1+....+\beta_kX_k+\epsilon$$
+
++ Logit o probit: $$Y= G(Y= \beta_0 +\beta_1X_1+....+\beta_kX_k+\epsilon)$$ 
+donde $G$ corresponde a la función de probabilidad logística o probabilistica que depende de una función lineal. 
+
+# Ejercicio de monitoria 
+
+Para abordar los modelos de elección binaria debemos instalar los siguientes paquetes: 
+```{r, include=FALSE}
+# install.packages(c("foreign","car","lmtest","stargazer","wooldridge","dplyr","broom"))
+library(foreign);library(car); library(lmtest); library(stargazer);
+library(wooldridge);library(dplyr);library(broom);library(margins) 
+```
+```{r}
+#library(foreign);library(car); library(lmtest); library(stargazer);
+#library(wooldridge);library(dplyr);library(broom) 
+```
+
+Cargamos la base de datos: 
+```{r}
+data<- read.dta("http://fmwww.bc.edu/ec-p/data/wooldridge/mroz.dta")
+help(mroz)
+attach(data)
+```
+Todo lo relacionado con la descripción de la base de datos la pueden encontrar en **help(mroz)**
+
+## Modelo de Probabilidad Lineal - MPL 
+
+Estimaremos un MPL para la probabilidad de que la mujer haya pertenecido a la fuera laboral. 
+
+Las variables explicativas a considerar son: 
+
++ Ingreso del esposo ( un mayor ingreso puede causar que la sra. considere no  trabajar)
++ Educación (más educación abre la posibilidad de que considere querer trabajar)
++ Experiencia 
++ Hijos menores de 6 años (Hijos menores de 6 años implican un mayor cuidado, por lo tanto pueden influir en la decisión de una mujer de pertenecer o no a la fuerza laboral)
++ Hijos de 6 años o más
+
+
+```{r}
+MPL=lm(inlf~nwifeinc+educ+exper+expersq+
+         age+kidslt6+kidsge6,
+       data = data)
+summary(MPL)
+```
+
+Con el paquete broom: 
+
+```{r}
+# Summary statistic en forma de data frame
+tidy_mpl = tidy(MPL); tidy_mpl  
+
+# Data frame con info. adicional sobre la regresión
+glance_mpl = glance(MPL); glance_mpl  
+
+# Data frame de datos expandidos con desviaciones estándar poblacional estimada, 
+#residuales, fitted values y más 
+augment_mpl = augment(MPL); augment_mpl  
+help("augment")
+
+#.hat	Diagonal of the hat matrix
+#.sigma	Estimate of residual standard deviation when corresponding observation is dropped 
+#from model
+#.cooksd	Cooks distance, cooks.distance()
+#.fitted	Fitted values of model
+#.se.fit	Standard errors of fitted values
+#.resid	Residuals
+#.std.resid	Standardised residuals
+
+#Estimar el MPL con erróres robustos a la heterocedasticidad p(1-p)
+coeftest(MPL,vcov=hccm) # Heteroscedasticity-Corrected Covariance Matrix 
+
+```
+
+### Predicciones MPL 
+Vamos a realizar la predicción para dos mujeres fuera de la muestra y con características especificas: 
+
++ 1. Una mujer de 20 años con un esposo con un salario de $100, con 5 años de educación, 0 años de experiencia y 2 niños menores de 6 años. 
++ 2. La segunda mujer de 52 años, su esposo esta desempleado, tiene 17 años de educación, 30 años de experiencia. 
+```{r}
+#Predicción para dos mujeres fuera de la muestra original
+MPL.pred = list(nwifeinc=c(100,0),educ=c(5,17),exper=c(0,30),expersq=c(0,900),
+                age=c(20,52),kidslt6=c(2,0),kidsge6=c(0,0)) 
+
+predict(MPL,MPL.pred)
+```
+
+Como pueden ver, el MPL arroja predicciones fuera del rango de probabilidad [0,1]. 
+
+### Predicciones con el paquete broom
+
+```{r}
+# Características de las dos mujeres fuera de la muestra
+MPL.pred2 <- data.frame(nwifeinc=c(100,0),educ=c(5,17),exper=c(0,30),expersq=c(0,900),
+                        age=c(20,52),kidslt6=c(2,0),kidsge6=c(0,0))
+
+# predicción con broom para las dos mujeres fuera de la muestra
+augment(MPL,newdata = MPL.pred2, type.predict="response")
+
+```
+
+La columna *.fitted* es la que corresponde a las probabilidades esperadas, que como ya se menciono no tiene lógica bajo la teoría estadística. 
+
+
+## MODELO LOGIT 
+
+Para estimar modelos Logit o Probit, debemos hacer uso del comando ***glm***. Tal como hemos visto en el transcurso del curso, la estructura de este tipo de comandos es muy sencilla: 
+
+$$glm(Y \sim X, family=binomial(link=logit), data)$$
+```{r}
+LOGIT = glm(inlf~nwifeinc+educ+exper+expersq+age+kidslt6+kidsge6,
+           family = binomial(link = logit),data = data); summary(LOGIT)
+
+```
+
+Ahora usando el paquete broom: 
+```{r}
+tidy_logit = tidy(LOGIT)
+glance_logit = glance(LOGIT)   # inlcuye logLik 
+augment_logit = augment(LOGIT)  # augmented data frame que incluye 
+#residuales y valores estimados como columnas 
+
+# predict sin más argumentos calcular los
+#   z_ajustados = b_0 + b_1 * x_1 + b_2 * x_2 + ... + b_n * x_n (bs coeficientes estimados)
+LOGIT.FIT = predict(LOGIT) #Valores ajustados dentro de la muestra.
+
+# predict con type="response"
+#   calcular P(Y = 1) = exp(z_ajustado)/(1 - exp(z_ajustado)) 
+# que es la probabilidad de exito para los diferentes valores 
+#   z_ajustados en el modelo para un modelo logit
+# Existen 3 formas diferentes de hacerlo: 
+
+# forma1
+LOGIT.pred = predict(LOGIT, type="response") 
+
+# forma2
+LOGIT.pred_2 = plogis(LOGIT.FIT) #plogis me da la función acumulada de probabilidad para una variable aleatoria logit estándar
+
+# forma3
+LOGIT.pred_3 = exp(LOGIT.FIT)/(1 + exp(LOGIT.FIT))
+
+# Las tres formas son equivalentes 
+
+```
+
+### Predicciones Logit
+Usaremos las mismas características de las mujeres que mencionamos en el caso del MPL. 
+
+```{r}
+# predicción para el logit con el comando broom 
+
+# Características de las dos mujeres fuera de la muestra
+LOGIT.pred2 <- data.frame(nwifeinc=c(100,0),educ=c(5,17),exper=c(0,30),expersq=c(0,900),
+                        age=c(20,52),kidslt6=c(2,0),kidsge6=c(0,0))
+
+z = augment(LOGIT,newdata = LOGIT.pred2)  # para encontrar z 
+p_exito = augment(LOGIT,newdata = LOGIT.pred2, type.predict="response")
+# para encontrar P(Y = 1) = exp(z)/ 1 - exp(z)
+p_exito
+```
+Si se dan cuenta, la columna *.fitted* ya tiene consistencia con los valores de una probabilidad. De tal manera que nuestra primera mujer, tiene una probabilidad muy cercana a cero de pertenecer al mercado laboral, mientras que la segunda mujer tiene una alta probabilidad (0,9) de pertenecer al mercado laboral. 
+
+### Pseudo $R^2$ de McFadden
+
+El pseudo $R^2$ de McFadden es una medida de bondad de ajuste, esta medida es importante en el sentido de que estamos hablando de modelos no lineales. Es por ello que carece de sentido fijarnos en el R^2 de los modelos de regresión lineal. Luego, entre mayor sea el pseudo$R^2$, mayor será la bondad de ajuste del modelo. 
+
+```{r}
+#Pseudo R^2 de McFadden para comparar dos modelos de elección 
+#discreta con las mismas variables
+# 1- (logaritmo verosimilitud modelo completo)/
+#  (logaritmo verosimilitud del modelo restringido con solo un intercepto)
+# is defined as 1- L1/L0, where L0 represents the log likelihood for the "constant-only" model and L1 is the log likelihood for the full model with constant and regressors.
+
+# La función loglik permite calcular la función 
+# log likelihood para el modelo LOGIT
+logLik(LOGIT)
+
+#Pseudo McFadden R^2 usando Residual deviance y NUll deviance
+1 - LOGIT$deviance/LOGIT$null.deviance 
+
+#Pseudo McFadden R^2 usando el log de la funx. de max. verosimilitud para el modelo completo y para el modelo
+# solo con el intercepto
+## loglik(LOGIT): funx. de max. verosimilitud modelo completo
+## loglik(LOGIT_NULL): funx. de max. verosimilitud modelo solo intercepto
+LOGIT_null <- glm(inlf~1, family = binomial, data = data)
+1- logLik(LOGIT)/logLik(LOGIT_null)
+
+```
+
+### Interpretación de los resultados: 
+
+Al estar trabajando con modelos no lineales, no podemos hacer una interpretación directa de los estimadores, lo único que hasta el momento podemos interpretar son los signos de los coeficientes, y por tanto no tenemos un orden de magnitud que nos permita entender cómo una variable afecta o no la probabilidad de ocurrencia de un evento. 
+
+Los odds ratio se interpretan como el número de veces que es más probable que ocurra el fenómeno $P(Y=1|X)$ frente al hecho de que no ocurra$P(Y=0|X)$: 
+
++ Odd=1 entonces $P(Y=1|X)=P(Y=0|X)$
++ Odd<1 entonces $P(Y=1|X)<P(Y=0|X)$ 
++ Odd>1 entonces $P(Y=1|X)>P(Y=0|X)$
+
+La forma de calcular los Odds Ratios es la siguiente: 
+```{r}
+
+odds=exp(z$.fitted);odds
+ 
+```
+
+Para más detalle en la forma en como se calculan estos odds, pueden remitirse al script. 
+
+Los cocientes entre odds ratios, se entienden como que tan probable es que ocurra la alternativa *i* frente a la alternativa *j*  
+```{r, include=FALSE}
+## Cociente entre odd ratios exp(betas)
+
+c.odds=exp(coefficients(LOGIT));c.odds    # Para cada parámetro estimado
+log.odds= coefficients(LOGIT);log.odds 
+ 
+```
+
+```{r}
+#c.odds=exp(coefficients(LOGIT));c.odds    # Para cada parámetro estimado
+#log.odds= coefficients(LOGIT);log.odds 
+ 
+stargazer(c.odds, log.odds, type="text") 
+```
+Para este caso, un año más de educación hace 1.24 veces más probable entrar al mercado laboral. 
+
+
+## MODELO PROBIT
+
+De la misma manera que con LOGIT, procedemos a usar el comando ***glm***, de tal manera que la estructura para este tipo de modelos es la siguiente: 
+
+$$glm(Y \sim X, family=binomial(link=probit), data)$$
+```{r}
+PROBIT = glm(inlf~nwifeinc+educ+exper+expersq+age+kidslt6+kidsge6,
+             family=binomial(link=probit),data=data)
+summary(PROBIT)
+```
+
+Haciendo uso del paquete broom: 
+
+```{r}
+tidy_probit =tidy(PROBIT)
+glance_probit =glance(PROBIT)   # inlcuye logLik 
+augment_probit = augment(PROBIT) 
+# augmented data frame que incluye residuales y valores estimados como columnas 
+
+# predict sin más argumentos calcular los 
+# z_ajustados = b_0 + b_1 * x_1 + b_2 * x_2 + ... + b_n * x_n (bs coeficientes estimados)
+PROBIT.FIT = predict(PROBIT) #Valores ajustados dentro de la muestra.
+
+# predict con type="response" calcular  
+# que es la probabilidad de éxito para los diferentes valores 
+#z_ajustados en el modelo para un modelo logit
+
+
+# Existen 3 formas diferentes de hacerlo: 
+
+# forma1
+PROBIT.pred = predict(PROBIT, type="response")
+
+# forma2
+PROBIT.pred_2 = pnorm(PROBIT.FIT) #pnorm me da la función acumulada de probabilidad para una variable aleatoria logit estándar
+
+# No se agrega la forma integral porque seria la integral asociada a la funciona de distribución acumulada de una normal
+
+```
+
+### Predicción
+De la misma manera que con el caso de logit, usaremos las mismas características de las mujeres consideradas para el caso de MPL. 
+
+```{r}
+# Características de las dos mujeres fuera de la muestra
+PROBIT.pred2 <- data.frame(nwifeinc=c(100,0),educ=c(5,17),exper=c(0,30),expersq=c(0,900),
+                           age=c(20,52),kidslt6=c(2,0),kidsge6=c(0,0))
+
+z_norm = augment(PROBIT,newdata = PROBIT.pred2)  # para encontrar z 
+p_exito_norm = augment(PROBIT,newdata = PROBIT.pred2, type.predict="response") # para encontrar P(Y = 1)
+p_exito_norm
+```
+
+De acuerdo con la columna *.fitted* la probabilidad de la primera mujeres es muy cercana a cero, mientras que la probabilidad de la segunda mujer es casi cercana a 1. Lo anterior, va en linea con que estos valores son coherentes con la teoria estadística dado que se encuentran entre en el rango de probabilidad de [0,1]. 
+
+### Pseudo $R^2$ de McFadden
+```{r}
+logLik(PROBIT)
+1 - PROBIT$deviance/PROBIT$null.deviance  #los modelos son estadisticamente equivalentes.
+
+#Pseudo McFadden R^2 usando el log de la funx. de max. verosimilitud para el modelo completo y para el modelo
+PROBIT_null <- glm(inlf~1, family = binomial, data = data)
+1- logLik(PROBIT)/logLik(PROBIT_null)
+
+```
+
+```{r}
+stargazer(MPL,LOGIT,PROBIT, column.labels = c("MPL","LOGIT","PROBIT"), type="text")
+```
+
+**Ahora bien, ya hemos visto la forma en como se estiman los modelos LOGIT y PROBIT, en muchas ocasiones se preguntan: **
+
+*- Oiga monitor, pero ya que hemos visto esto ¿Cuándo se que modelo usar?* 
+
+**La respuesta a esa pregunta es: Ambos modelos son correctos, la única diferencia está en las colas de las funciones de probabilidad de la función logística y estándar. Es decir, el modelo LOGIT en muchas ocasiones permite la ocurrencia de eventos más raros que el modelo RPOBIT. En otras palabras, dependiendo de la decisión que se deseé modelar y el comportamiento de los datos, se elige si PROBIT o LOGIT.** 
+
+
+## Efectos parciales: 
+
+Tal como ya lo mencionamos arriba, es importante que tengan en cuenta que **nunca se pueden interpretar de manera directa los coeficientes de los modelos LOGIT y PROBIT**. Es por ello que recurrimos a los ODDS RATIO o en el mejor de los casos a los efectos parciales, la forma en como se calculan estos efectos parciales varian y dependen del modelo.
+
+El efecto parcial para la variable $k$ se calcula dependiendo del modelo de la siguiente manera: 
+
++ MPL: $$\beta_k$$
+
++ Logit: $$ \Lambda(X\beta)*[1-\Lambda(X\beta)]*\beta_k $$
+
++ Probit: $$ \phi(X\beta)*\beta_k $$
+
+Donde $\Lambda()$ hace referencia a la función de distribución logística acumulada estándar y $\phi()$ a la función de distribución de probabilidad normal (OJO no es la acumulada).
+
+Recuerde que cuando se hace referencia a un efecto marginal o parcial, se hace referencia a una derivada. 
+
+Para hacer el cálculo de los efectos marginales se usará el paquete ***margins***. No obstante es importante que tengan en cuenta que cuando tienen interacción de variables o variables elevadas al cuadrado, para e cálculo de los efectos marginales se deben incluir en la forma funcional de la forma ***I(Var1xVar2)*** o ***I(Var^2)***. De esta manera se garantiza que el efecto marginal se calcule correctamente. 
+
+Para usar el paquete *margins* en el ejemplo de la monitoria debemos incluir ***I(exper^2)*** en la estimación de los modelos Logit y Probit.
+
+```{r}
+# Modelo Logit
+LOGIT = glm(inlf~nwifeinc+educ+exper+I(exper^2)+age+kidslt6+kidsge6,
+            family = binomial(link = logit),data = data)
+# Modelo Probit
+PROBIT = glm(inlf~nwifeinc+educ+exper+I(exper^2)+age+kidslt6+kidsge6,
+             family=binomial(link=probit),data=data)
+```
+
+Para el caso de la monitoria calcularemos el PEA (Partial effect on the average) y el APE (Average Partial Effect). El PEA es el cálculo del efecto de determinada variable X sobre Y, en el caso específico de la media de la muestra, mientras que el APE es el efecto parcial promedio de una variable X sobre Y en todos los casos de la muestra.
+
+### Calcular el APE
+
+La estructura del coligo corresponde a $margins(MODELO, type="response")$. Es importante indicar el *response* para que se cáclule el APE. 
+
+```{r}
+margins(LOGIT, type = "response") 
+margins(PROBIT, type = "response")
+```
+ 
+### calcular el PEA
+
+Para este caso es necesario proveerle a Rstudio un data.frame con las variables evaluadas en sus medias. 
+
+```{r}
+margins(LOGIT, type = "response", 
+        data.frame(nwifeinc = mean(nwifeinc), 
+                   educ = mean(educ), 
+                   age = mean(age), 
+                   exper = mean(exper), 
+                   kidslt6 = mean(kidslt6),
+                   kidsge6 = mean(kidsge6))) 
+margins(PROBIT, type = "response", 
+        data.frame(nwifeinc= mean(nwifeinc), 
+                   educ = mean(educ), 
+                   age = mean(age), 
+                   exper = mean(exper), 
+                   kidslt6 = mean(kidslt6),
+                   kidsge6 = mean(kidsge6)))
+```
+
+### Calcular el PEA para variables dicotómincas o discretas 
+
+#### Variables dicotómicas 
+
+El cálculo del PEA para la dummy de *kidslt6* se puede hacer de dos maneras, de manera manual o con el paquete *margins*, no obstante ambos resultados son equivalentes. Recuerde que para hacer este procedimiento debe calcular dos probabilidades, una cuando la dummy toma el valor de 1 y otra cuando la dummy toma el valor de 0, en ambos casos el resto de variables evaluadas en la media de la muestra. En este caso el efecto parcial será la resta entre las Probabilidades cuando la dummy es 1 y cuando la dummy toma el valor de 0. 
+
+```{r}
+# De manera manual para logit
+p_1_logis = plogis(0.425 - 0.0213 * mean(nwifeinc) + 0.221 * mean(educ) 
+            + 0.206 * mean(exper) - 0.0032 * mean(expersq) - 0.0880 * mean(age) 
+            + 0.0601 - 1.44 )
+
+p_2_logis = plogis(0.425 + -0.0213 * mean(nwifeinc) + 0.221 * mean(educ) 
+            + 0.206 * mean(exper) - 0.0032 * mean(expersq) -0.0880 * mean(age) 
+            + 0.0601)
+
+marg_effect_1_logis = p_1_logis - p_2_logis;marg_effect_1_logis
+
+# De manera manual para probit  
+
+p_1_norm = pnorm(0.270 - 0.012 * mean(nwifeinc) + 0.131 * mean(educ) 
+             + 0.123 * mean(exper) - 0.0019 * mean(expersq) - 0.053 * mean(age) 
+             + 0.036 - 0.868 )
+
+p_2_norm = pnorm(0.270 - 0.012 * mean(nwifeinc) + 0.131 * mean(educ) 
+                 + 0.123 * mean(exper) - 0.0019 * mean(expersq) 
+                 - 0.053 * mean(age) + 0.036)
+
+marg_effect_1_norm = p_1_norm - p_2_norm;marg_effect_1_norm
+```
+
+Con el paquete *margins*  en la parte del data.frame hay que indicarle en este caso que la dummy toma el valor de 0. 
+```{r}
+margins(LOGIT, type = "response", data.frame(nwifeinc=mean(nwifeinc), educ = mean(educ), 
+                                             age = mean(age), exper = mean(exper), 
+                                             kidslt6 = 0, kidsge6 = 1))
+margins(PROBIT, type = "response", data.frame(nwifeinc=mean(nwifeinc), educ = mean(educ), 
+                                             age = mean(age), exper = mean(exper), 
+                                             kidslt6 = 0, kidsge6 = 1))
+
+```
+Luego con estos cálculos podemos determinar que en promedio tener hijos menores de 6 años, reduce la probabilidad de pertenecer en el mercado laboral en aproximadamente un 30%. 
+
+### Calcular el PEA para variables discretas
+
+En este caso evaluaremos el efecto marginal de pasar de 10 años de experiencia en el mercado laboral a 11 años de experiencia. Nuevamente, recuerde que para el resto de variables debe usar la media. 
+
+```{r}
+# De manera manual para logit
+p_1_logis = plogis(0.425 - 0.0213 * mean(nwifeinc) + 0.221 * mean(educ) 
+             + 0.206 * 11 - 0.0032 * 11^2 - 0.0880 * mean(age) + 0.0601)
+
+p_2_logis = plogis(0.425 + -0.0213 * mean(nwifeinc) + 0.221 * mean(educ) 
+             + 0.206 * 10 - 0.0032 * 10^2 -0.0880 * mean(age) + 0.0601)
+
+marg_effect1 = p_1_logis - p_2_logis; marg_effect1
+
+# De manera manual para probit
+p_1_norm = pnorm(0.270 - 0.012 * mean(nwifeinc) + 0.131 * mean(educ) 
+                 + 0.123 * 11 - 0.0019 * 11^2 - 0.053 * mean(age) + 0.036)
+
+p_2_norm = pnorm(0.270 - 0.012 * mean(nwifeinc) + 0.131 * mean(educ) 
+                 + 0.123 * 10 - 0.0019 * 10^2 - 0.053 * mean(age) + 0.036)
+
+marg_effect2 = p_1_norm - p_2_norm;marg_effect2
+```
+Con el paquete *margins*  en la parte del data.frame hay que indicarle en este caso que la variable *expert* toma el valor de 10. 
+
+```{r}
+margins(LOGIT, type = "response", data.frame(nwifeinc=mean(nwifeinc), educ = mean(educ), 
+                                             age = mean(age), exper = 10,
+                                             kidslt6 = 0, kidsge6 = 1))
+margins(PROBIT, type = "response", data.frame(nwifeinc=mean(nwifeinc), educ = mean(educ), 
+                                             age = mean(age), exper = 10, 
+                                             kidslt6 = 0, kidsge6 = 1))
+```
+Luego, podemos concluir que en promedio pasar de 10 años de experiencia a 11 años, aumenta la probabilidad de pertenecer al mercado laboral en aproximadamente 3%.
+
+Una  vez obtengamos estos resultados, ya es posible interpretar esos efectos parciales de como las variables afectan la probabilidad de ocurrencia: 
+
+Ya para terminar es importante que recuerden que para el caso de cálculos manuales de probabilidad se usan **las funciones de probabilidad acumulada (las que tienen forma de S)** mientras que para el cálculo de los efectos marginales se usan **las funciones de distribución (las campanas)**. 
+
