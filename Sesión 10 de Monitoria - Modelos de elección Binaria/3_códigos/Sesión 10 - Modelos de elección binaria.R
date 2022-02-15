@@ -7,7 +7,7 @@
 ##______________________________________________________________________________
 
 #Activar los paquetes que se van a utilizar
-library(foreign);library(car); library(lmtest); library(stargazer);
+library(haven);library(car); library(lmtest); library(stargazer);
 library(wooldridge);library(dplyr);library(broom) 
 
 ### Funciones paquete Broom: 
@@ -22,7 +22,7 @@ vignette("broom")
 vignette("available-methods")
 
 #Cargar la base de datos
-data<- read.dta("http://fmwww.bc.edu/ec-p/data/wooldridge/mroz.dta")
+data<- read_dta("http://fmwww.bc.edu/ec-p/data/wooldridge/mroz.dta")
 help(mroz)
 attach(data)
 
@@ -188,8 +188,8 @@ LOGIT_null <- glm(inlf~1, family = binomial, data = data)
 #Si linealizamos el ODD lo interpretamos como un modelo log-lin   log(Mi/1-Mi) = z
 #ODDs Ratios para el modelo LOGIT: ODDs = p.éxito/p.fracaso. e.g. 0.75/0.25, la probabilidad de éxito es de 3 a 1
 
-##################################################################################
-## Ejemplo de odds ratio para dos valor predichos para mujeres fuera de la muestra
+##############################################################################################
+## Ejemplo de odds ratio para los dos valores predichos z para las mujeres fuera de la muestra
 
 # Se va usar las predicciones que se encontraron 
 # de las dos mujeres fuera de la muestra en LOGIT.pred2 
@@ -239,10 +239,11 @@ PROBIT.FIT
 
 # forma1
 PROBIT.pred = predict(PROBIT, type="response")
-View(PROBIT.pred)
+PROBIT.pred
 
 # forma2
 PROBIT.pred_2 = pnorm(PROBIT.FIT) #pnorm me da la funcion acumulada de probabilidad para una variable aleatoria normal estandar
+PROBIT.pred_2
 
 # No se agrega la forma integral porque seria la integral asociada a la funciona de distribucion acumulada de una normal
 
